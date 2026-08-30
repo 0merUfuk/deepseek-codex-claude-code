@@ -58,15 +58,6 @@ Treat the Linux and Windows paths as a reasoned, carefully-written port, not as 
 
 ## Evidence boundary
 
-The workload metrics in this repository come from the author's DeepSeek dashboard screenshots and workload, not from the documentation above:
-
-- 211,285,901 dashboard-counted tokens
-- 1,244 API requests
-- $1.67 total reported cost
-- `deepseek-v4-flash`
-
-These figures belong to the observed Codex workload only. The Claude Code integration has been verified end to end, but no comparable Claude Code workload total is currently published.
-
-Do not extrapolate those totals into universal DeepSeek pricing. Current DeepSeek pricing differentiates cache-hit input, cache-miss input, output, and peak/off-peak periods.
+The workload numbers in this repository come from the author's own DeepSeek dashboard screenshots, not from the documentation above — see the README's "Evidence boundary" for the figures and what they don't cover.
 
 **Anecdotal note, not a benchmark.** During this hands-on use, DeepSeek's prompt caching subjectively felt unusually effective — repeat-request cost noticeably lower than the author's usual experience with other providers. This is an unverified impression, not a measurement: no cache-hit ratio was captured, and no other provider's numbers are attached for comparison. Don't cite it as a pricing or caching-efficiency claim; if that comparison is ever run properly, it belongs with real numbers, not here.

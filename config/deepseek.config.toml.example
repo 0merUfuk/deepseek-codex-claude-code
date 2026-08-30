@@ -26,20 +26,11 @@ name = "DeepSeek"
 base_url = "https://api.deepseek.com/"
 wire_api = "responses"
 
-# Hardened credential path: Codex invokes this command and uses its
-# trimmed stdout as the bearer token. The helper reads the key from the OS's
-# native secret store (macOS Keychain / Linux Secret Service / Windows
-# Credential Manager); the key never sits in this file or in Codex's
-# environment.
+# Codex invokes this command and uses its trimmed stdout as the bearer
+# token; the key never sits in this file. Unlike model_catalog_json above,
+# "~" is NOT expanded here — bare name on PATH, or a fully-qualified path.
 #
-# IMPORTANT: auth.command is executed with execvp, not through a shell, so
-# "~" is NOT expanded here (unlike model_catalog_json above). Reference the
-# helper by bare name and keep it on PATH (e.g. ~/.local/bin), or use a
-# fully-qualified absolute path. A "~/..." path here fails with
-# "No such file or directory" even though the file exists.
-#
-# macOS / Linux — bare command name on PATH, service name passed as args[0]
-# (see scripts/deepseek-credential-token):
+# macOS / Linux (see scripts/deepseek-credential-token):
 [model_providers.deepseek.auth]
 command = "deepseek-credential-token"
 args = ["deepseek-api-codex"]

@@ -33,7 +33,7 @@ Do not paste secrets into screenshots, commits, shell profiles, prompts, logs, o
 
 Give it a service/target name dedicated to Codex, distinct from the Claude Code launcher's. Run this yourself in an interactive terminal so the key is never typed by an agent, written to shell/command history, or echoed to the screen.
 
-**Why `deepseek-api-codex` and not a generic `deepseek-api`:** if you also set up the Claude Code launcher in this kit, it uses its own service name (`deepseek-api-claudecode`) — and, more importantly, its own distinct DeepSeek API key. It's the distinct keys, one per tool, that make DeepSeek dashboard usage attributable per tool and let you rotate one without touching the other. Storing the same key under two different service names would not give you either property.
+If you also set up the Claude Code launcher in this kit, give it its own distinct DeepSeek API key under its own service name (`deepseek-api-claudecode`) — see the README's "Why two distinct DeepSeek API keys" for why that matters.
 
 ### macOS
 
@@ -143,11 +143,9 @@ args = ["deepseek-api-codex"]
 
 On Windows, replace the `auth` block per the commented-out alternative in `config/deepseek.config.toml.example` — `command = "powershell"` with `args` pointing at `deepseek-credential-token.ps1`. That form is untested; verify it against your installed Codex version before relying on it.
 
-The provider-auth command is a current Codex feature, confirmed present in the installed binary (its config schema defines a `ModelProviderAuthInfo { command, args, timeout }` struct — not just documented, but verifiable by inspecting the installed `codex` executable directly). Codex invokes the helper, trims its stdout, and uses that value as the bearer token. The token is cached in memory by Codex for the configured refresh interval rather than written into the profile.
+Codex invokes the helper, trims its stdout, and uses that value as the bearer token — it's cached in memory for the configured refresh interval, never written into the profile. If your installed Codex version predates command-backed provider auth, do **not** silently fall back to plaintext `experimental_bearer_token`; update Codex or deliberately choose a documented alternative after reviewing the trade-off.
 
-If your installed Codex version predates command-backed provider auth, do **not** silently fall back to plaintext `experimental_bearer_token`. Update Codex, or deliberately choose a documented alternative after reviewing the security trade-off.
-
-**Path handling gotcha, verified empirically on macOS:** `model_catalog_json = "~/..."` above IS tilde-expanded by Codex's config loader (confirmed by pointing it at a deliberately nonexistent path and observing a hard load error, rather than silent success). But `auth.command` is **not** — it's invoked directly via `execvp` (or the Windows equivalent), without a shell, so a `~/...` value there fails with "No such file or directory" even when the file exists. That's why the profile above references the helper by bare name (relying on it being on `PATH`) rather than by path. Don't assume both fields behave the same way, and don't assume this holds on Linux/Windows without checking — different Codex versions and platforms could change either behavior, so re-verify rather than trust this note indefinitely.
+**Path handling gotcha:** `model_catalog_json`'s `~/...` above is tilde-expanded by Codex; `auth.command`'s is **not** (invoked directly, no shell) — a `~/...` there fails with "No such file or directory" even though the file exists. That's why the profile references the helper by bare name on `PATH` instead. Verified on macOS; see [docs/sources.md](sources.md) for how, and re-verify on Linux/Windows rather than assume it holds.
 
 ## 5. Install the launcher
 

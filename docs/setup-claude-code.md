@@ -23,7 +23,7 @@ claude-deepseek   -> explicit DeepSeek path
 
 ## 1. Store the credential
 
-Use a distinct DeepSeek API key for Claude Code — not the same key used for the Codex profile in this kit — and store it under its own service/target name (e.g. `deepseek-api-claudecode`, separate from Codex's `deepseek-api-codex`). It's the distinct key, not just the distinct service name, that keeps DeepSeek dashboard usage attributable per tool and lets you rotate one without touching the other; storing the same key under a second service name would not give you either property.
+Use a distinct DeepSeek API key for Claude Code — not the same key used for the Codex profile in this kit — under its own service/target name (`deepseek-api-claudecode`, separate from Codex's `deepseek-api-codex`). See the README's "Why two distinct DeepSeek API keys" for why that matters.
 
 ### macOS
 
@@ -82,19 +82,15 @@ CLAUDE_CODE_EFFORT_LEVEL=max
 CLAUDE_CODE_AUTO_COMPACT_WINDOW=786432
 ```
 
-**On the `[1m]` suffix — verified, not doc noise.** It's tempting to assume `deepseek-v4-pro[1m]` is a doc-page rendering artifact (an earlier version of this kit made exactly that assumption and stripped it — that was wrong). It's a real Claude Code client-side convention: Claude Code's own model-alias list includes `sonnet[1m]`, `opus[1m]`, `fable[1m]` (no `flash[1m]`/`haiku[1m]` — matches the values above), and it strips the suffix before the model ID reaches the wire while using its presence to assume the model's real (large) context window and add Anthropic's `context-1m` beta header. Confirmed empirically on macOS, not from docs:
+**The `[1m]` suffix is real and load-bearing, not doc noise** — it's a Claude Code client-side convention that unlocks the model's real ~1,048,576-token context window (without it, Claude Code assumes 200,000 tokens and auto-compacts far earlier than `CLAUDE_CODE_AUTO_COMPACT_WINDOW` above intends). Keep it only on the Opus/Sonnet-tier lines; no such variant exists for Haiku/flash. Verified on macOS by checking the wire, not the docs — see [docs/sources.md](sources.md) for how, and reproduce it yourself if you want to confirm on Linux/Windows:
 
 ```bash
 ANTHROPIC_LOG=debug claude-deepseek -p "hi" 2>&1 | grep -E "model:|anthropic-beta"
-#   model: "deepseek-v4-pro"                              <- suffix stripped for the wire
-#   "anthropic-beta": "...,context-1m-2025-08-07,..."     <- added because of the suffix
 ```
 
-This is a Claude Code client behavior, not an OS-specific one, so it should hold identically on Linux and Windows — re-verify with the equivalent of the command above (`$env:ANTHROPIC_LOG='debug'` in PowerShell) rather than assuming.
+(`$env:ANTHROPIC_LOG='debug'` on Windows.)
 
-Without the suffix, Claude Code treats the model as fully unrecognized and assumes a **200,000-token** window regardless of what the model can actually do (confirmed via the exact warning text Claude Code prints for an unrecognized model) — meaning `CLAUDE_CODE_AUTO_COMPACT_WINDOW=786432` above (75% of DeepSeek's real 1,048,576-token window) would be configured against a budget Claude Code doesn't believe exists, and the session would auto-compact far earlier than necessary. Keep the suffix on the Opus/Sonnet-tier lines; don't add it to the Haiku/flash line, since no such variant exists for that tier.
-
-**A real persistence risk this surfaced, worth checking for regardless of the above:** at one point during testing, a `claude-deepseek` run left `deepseek-v4-flash` written into the **normal** `~/.claude/settings.json`'s `"model"` field — meaning plain `claude` afterwards tried to use it against the real Anthropic API and failed. The suspected mechanism is the `switchModelsOnFlag` setting (persists a model change as your new default) firing on an internal alias resolution, not on anything this launcher does on purpose. The fix is included in the launcher below (`"switchModelsOnFlag":false` in its `--settings` payload) and held up across repeated test runs afterwards, but treat this as a known risk to actively check for — see step 4.
+A real risk worth checking for regardless: a `claude-deepseek` run has been observed leaving a DeepSeek model id in the **normal** `~/.claude/settings.json`, breaking plain `claude` afterward. The fix is in the launcher (step 3) — see step 4 to verify it's holding.
 
 The wrapper gets `ANTHROPIC_AUTH_TOKEN` from the OS secret store at launch time.
 
@@ -108,9 +104,9 @@ Claude Code documents this switch for removing authentication credentials from B
 
 ## 3. Hide native models from the `/model` picker
 
-Claude Code's `/model` picker always lists the full built-in model lineup (Opus, Sonnet, Haiku, and any other native model such as Fable) alongside whatever `ANTHROPIC_DEFAULT_*` aliases you've set. Overriding the three tier aliases relabels three of those slots — it does not remove the others. If you pick a native model while `ANTHROPIC_BASE_URL` still points at DeepSeek, the request still goes to DeepSeek — but that's not guaranteed to fail cleanly. DeepSeek's Anthropic-compatible layer currently maps Claude-style model names onto its own models, so the request can be silently served by whatever DeepSeek model that name happens to alias to, rather than erroring. That's arguably worse than a clean failure: the model you picked in `/model` and the model that actually served the request can silently diverge. Hiding the picker sidesteps the question of which behavior to expect and keeps model selection explicit.
+Claude Code's `/model` picker still lists every built-in model (Opus, Sonnet, Haiku, Fable) alongside the DeepSeek aliases — overriding the three tiers relabels those slots, it doesn't remove the others. Picking a native one while `ANTHROPIC_BASE_URL` points at DeepSeek isn't guaranteed to fail cleanly: DeepSeek's Anthropic-compatible layer can silently serve it from a different DeepSeek model instead of erroring, so the model you picked and the model that answered can quietly diverge. Hiding the picker keeps that explicit instead of leaving it to chance.
 
-The launcher works around this with a session-scoped `modelPicker` setting passed via `--settings`, which only applies to `claude-deepseek` invocations — normal `claude` and its picker are untouched. It also forces `switchModelsOnFlag` off in the same payload, for the persistence risk noted above:
+The launcher does this with a session-scoped `modelPicker` setting via `--settings` (normal `claude` is untouched), and forces `switchModelsOnFlag` off in the same payload to stop the settings.json persistence risk from step 2:
 
 ```bash
 exec claude --settings '{"switchModelsOnFlag":false,"modelPicker":{"replaceBuiltInOptions":true,"options":[
