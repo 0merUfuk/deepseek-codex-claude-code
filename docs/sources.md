@@ -11,7 +11,7 @@ Provider/tool integrations change quickly. Re-check these sources before install
 - Models & pricing: https://api-docs.deepseek.com/quick_start/pricing/
 - Anthropic-compatible API guide: https://api-docs.deepseek.com/guides/anthropic_api/
 
-**Known documentation inconsistency — V4 Pro and the Responses API.** DeepSeek's current model/pricing matrix and its dedicated Responses/Codex documentation are not fully consistent about whether V4 Pro supports the Responses API. This kit deliberately uses `deepseek-v4-flash` for Codex (see `config/deepseek.config.toml.example`) and therefore does not rely on the disputed V4 Pro behavior. Re-check current provider documentation before changing the Codex model.
+**V4 Pro works fine with Codex's Responses API.** DeepSeek's official Codex model catalog (`~/.codex/deepseek.models.json`, fetched via their own setup script — see below) marks `deepseek-v4-pro` `supported_in_api: true` with the same `low`/`high`/`max` reasoning-effort levels as `deepseek-v4-flash`, and it's been used successfully through this kit's Codex profile. This kit's example config defaults to `deepseek-v4-flash` as a choice, not a workaround — swap `model = "deepseek-v4-pro"` in `~/.codex/deepseek.config.toml` if you want the larger model.
 
 ## OpenAI Codex
 

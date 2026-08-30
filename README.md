@@ -104,8 +104,7 @@ Verified **2026-08-30**, on macOS — Codex's Responses-API integration, command
 
 ## Known caveats
 
-- Codex and Claude Code aren't necessarily on the same DeepSeek model — any comparison between the two should control for that.
-- DeepSeek's own docs aren't fully consistent about which models support the Responses API; this kit uses `deepseek-v4-flash` for Codex, sidestepping the disputed case. Details: [docs/sources.md](docs/sources.md).
+- Both `deepseek-v4-flash` and `deepseek-v4-pro` work on both harnesses, with the full `low`/`high`/`max` reasoning-effort range — this kit's example configs just default to specific choices per harness. Swap the model in `~/.codex/deepseek.config.toml` or via Claude Code's `/model` picker if you want the other one. Any comparison between the two harnesses should still control for which model each is actually using.
 - Linux needs a running Secret Service provider (GNOME Keyring, KWallet, or similar) — usually there on a desktop session, often not on headless/server Linux, which this kit doesn't cover.
 
 ## Sources
