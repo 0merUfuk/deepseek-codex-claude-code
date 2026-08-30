@@ -13,7 +13,7 @@ claude            -> normal Claude Code path
 claude-deepseek   -> explicit DeepSeek path
 ```
 
-**Platform status:** the macOS path is verified end to end (see [docs/sources.md](sources.md)). The Linux and Windows paths follow the same design and use well-documented OS APIs, but have not been run on a Linux or Windows machine as part of preparing this kit — verify each step yourself the first time, the same way the macOS path was originally verified.
+**Platform status:** the macOS and Windows paths are verified end to end (see [docs/sources.md](sources.md)) — Windows independently, by someone other than the author. The Linux path follows the same design and uses well-documented OS APIs, but hasn't been run on a Linux machine as part of preparing this kit — verify each step yourself the first time, the same way macOS and Windows were.
 
 ## 0. Preconditions
 

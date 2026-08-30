@@ -9,8 +9,8 @@ model_reasoning_effort = "high"
 # "~" here IS expanded by Codex's config loader for this field (confirmed by
 # testing with a deliberately broken path: Codex errored on load rather than
 # silently ignoring it). Portable across machines/usernames as written.
-# Verified on macOS; re-verify tilde-expansion on Linux and Windows before
-# relying on it there — not independently confirmed on either yet.
+# Verified on macOS and Windows; re-verify tilde-expansion on Linux before
+# relying on it there — not independently confirmed there yet.
 model_catalog_json = "~/.codex/deepseek.models.json"
 
 # Optional extra caution for a third-party/unfamiliar model: require your
@@ -35,9 +35,8 @@ wire_api = "responses"
 command = "deepseek-credential-token"
 args = ["deepseek-api-codex"]
 
-# Windows — comment out the two lines above and use this instead. Untested
-# on Windows Codex; verify empirically (see docs/setup-codex.md) before
-# relying on it.
+# Windows — comment out the two lines above and use this instead. Verified
+# working on Windows Codex (2026-08-31, independently).
 # [model_providers.deepseek.auth]
 # command = "powershell"
 # args = [

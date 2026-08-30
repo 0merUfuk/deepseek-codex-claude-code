@@ -20,7 +20,7 @@ Configure my existing Codex CLI installation so DeepSeek is available through an
 - Create a dedicated launcher `codex-deepseek` (macOS/Linux: a `codex-deepseek` shell script; Windows: `codex-deepseek.ps1`).
 - Treat current official DeepSeek docs and the installed Codex schema/source as authoritative over this prompt for version-sensitive fields. Where docs and the installed binary disagree, or a doc claim is surprising, verify against the installed binary/source before trusting it (e.g. `strings` the Codex binary for the relevant struct/field names) rather than taking either source on faith.
 - Never claim success until both normal and DeepSeek paths have been verified end-to-end with a real request.
-- **macOS and Linux are verified working designs; the Windows path is a reasoned but unverified port** (no Windows machine was available to test it while this kit was written). If you're on Windows, say so explicitly when you report completion, and be more conservative about claiming something works versus something merely ran without an error.
+- **macOS and Windows are verified working designs** — Windows confirmed independently (2026-08-31), by someone other than the author, on both harnesses, with real DeepSeek dashboard usage. **The Linux path is a reasoned but unverified port** (no Linux machine was available to test it while this kit was written). If you're on Linux, say so explicitly when you report completion, and be more conservative about claiming something works versus something merely ran without an error.
 
 ## Before changing anything
 
@@ -81,7 +81,7 @@ command = "deepseek-credential-token"
 args = ["deepseek-api-codex"]
 ```
 
-On Windows, `command`/`args` instead need to invoke PowerShell with the helper script's path, e.g. `command = "powershell"`, `args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "<absolute path>\deepseek-credential-token.ps1", "deepseek-api-codex"]` — **this specific form is unverified**; confirm empirically that your installed Codex version on Windows actually invokes it this way (it may need a different quoting or invocation style) before trusting it.
+On Windows, `command`/`args` instead need to invoke PowerShell with the helper script's path, e.g. `command = "powershell"`, `args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "<absolute path>\deepseek-credential-token.ps1", "deepseek-api-codex"]` — **confirmed working** (verified independently on Windows, 2026-08-31); minor quoting differences are still plausible across Codex versions, so double-check on yours rather than assuming.
 
 If the current installed schema differs, adapt to the current schema and explain the difference.
 

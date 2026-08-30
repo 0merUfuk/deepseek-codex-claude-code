@@ -13,7 +13,7 @@ Codex       -> opt-in profile          -> Responses API             -> DeepSeek
 Claude Code -> process-scoped override -> Anthropic-compatible API  -> DeepSeek
 ```
 
-Both integrations are live and verified on macOS ([platform status](#current-compatibility)). Each harness uses its own DeepSeek API key, stored under a separate name in the OS's native secret store — macOS Keychain, Linux Secret Service, or Windows Credential Manager.
+Both integrations are live and verified end to end on macOS and Windows ([platform status](#current-compatibility)). Each harness uses its own DeepSeek API key, stored under a separate name in the OS's native secret store — macOS Keychain, Linux Secret Service, or Windows Credential Manager.
 
 ## Evidence boundary
 
@@ -102,7 +102,7 @@ Both setup docs cover macOS, Linux, and Windows in the same file, with a platfor
 
 ## Current compatibility
 
-Verified **2026-08-30**, on macOS — Codex's Responses-API integration, command-backed provider auth, and Claude Code's `[1m]` context-window convention and `/model`-picker behavior all checked against the live tools, not just docs. Linux and Windows were added the same day from documented OS APIs (Secret Service, Windows Credential Manager) but haven't themselves been run — see [docs/sources.md](docs/sources.md) for exactly what's verified versus ported, and for anything version-sensitive before you install or republish from this kit.
+Verified **2026-08-30** on macOS and **2026-08-31** on Windows — Codex's Responses-API integration, command-backed provider auth, and Claude Code's `[1m]` context-window convention and `/model`-picker behavior all checked against the live tools, not just docs. The Windows pass was run independently, by someone other than the author, on both harnesses, with real DeepSeek dashboard usage confirming requests actually reached the provider. Linux was added the same day as Windows from documented OS APIs (Secret Service) but hasn't itself been run — see [docs/sources.md](docs/sources.md) for exactly what's verified versus ported, and for anything version-sensitive before you install or republish from this kit.
 
 ## Known caveats
 

@@ -1,6 +1,6 @@
 # Sources and verification date
 
-Last verified: **2026-08-30**.
+Last verified: **2026-08-30** (macOS), **2026-08-31** (Windows).
 
 Provider/tool integrations change quickly. Re-check these sources before installation or publication.
 
@@ -48,13 +48,11 @@ While preparing this kit, a DeepSeek Codex model-catalog fetch (via an AI agent'
 
 ## Cross-platform status (Linux, Windows)
 
-Everything above under "OpenAI Codex" and "Claude Code" was verified against macOS behavior specifically (Keychain, `security`, `execvp` semantics observed on that platform). The Linux path (`secret-tool` / Secret Service) and the Windows path (Credential Manager via `advapi32.dll` `CredRead`/`CredWrite`, invoked from PowerShell) are built from well-documented, standard OS APIs and follow the same design, but **were not run on a Linux or Windows machine while preparing this kit** — no access to either at the time. Specifically unverified there:
+Originally, everything under "OpenAI Codex" and "Claude Code" above was verified against macOS behavior specifically. Linux and Windows were then added as a reasoned port from well-documented, standard OS APIs (Secret Service; Windows Credential Manager via `advapi32.dll`), without a machine available to test either at the time.
 
-- whether `model_catalog_json`'s tilde-expansion and `auth.command`'s lack of it (docs/setup-codex.md, step 4) hold the same way on Linux/Windows Codex builds;
-- whether Codex's `auth.command` + `args` array successfully invokes `powershell.exe` with a script path on Windows the way it invokes a bare executable on macOS/Linux;
-- whether the `[1m]` suffix behavior in Claude Code is identical cross-platform (there's no OS-specific reason it wouldn't be, since it's client-side alias-list logic, but it hasn't been checked on the wire outside macOS).
+**Windows is now verified end to end (2026-08-31)**, independently, by someone other than the author — both the Codex and Claude Code paths, with real DeepSeek dashboard usage confirming requests actually reached the provider, not just that the launchers ran without erroring. That resolves what was previously unverified there: `model_catalog_json` tilde-expansion, whether Codex's `auth.command` + `args` array actually invokes `powershell.exe` with a script path the way the config example assumes, and whether the `[1m]` suffix behaves the same on the wire — all confirmed working as documented.
 
-Treat the Linux and Windows paths as a reasoned, carefully-written port, not as independently verified — run the verification steps in docs/setup-codex.md and docs/setup-claude-code.md yourself the first time on either platform, the same way the macOS path was originally verified rather than assumed from docs.
+**Linux remains unverified.** The Secret Service path (`secret-tool`) is still a reasoned port from documented APIs, not run on a Linux machine while preparing this kit. Run the verification steps in `docs/setup-codex.md` and `docs/setup-claude-code.md` yourself the first time on Linux, the same way macOS and Windows were verified rather than assumed from docs.
 
 ## Evidence boundary
 

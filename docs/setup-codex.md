@@ -10,7 +10,7 @@ The important current Codex behavior is `--profile <name>`: it layers `$CODEX_HO
 
 The public reproduction below also uses Codex's current command-backed provider authentication so the DeepSeek API key can stay in the OS's native secret store — macOS Keychain, the Linux Secret Service, or Windows Credential Manager — instead of being stored in TOML or inherited through the Codex process environment.
 
-**Platform status:** the macOS path is verified end to end (see [docs/sources.md](sources.md)). The Linux and Windows paths follow the same design and use well-documented OS APIs, but have not been run on a Linux or Windows machine as part of preparing this kit — verify each step yourself the first time, the same way the macOS path was originally verified.
+**Platform status:** the macOS and Windows paths are verified end to end (see [docs/sources.md](sources.md)) — Windows independently, by someone other than the author. The Linux path follows the same design and uses well-documented OS APIs, but hasn't been run on a Linux machine as part of preparing this kit — verify each step yourself the first time, the same way macOS and Windows were.
 
 ## 0. Preconditions
 
@@ -141,7 +141,7 @@ command = "deepseek-credential-token"
 args = ["deepseek-api-codex"]
 ```
 
-On Windows, replace the `auth` block per the commented-out alternative in `config/deepseek.config.toml.example` — `command = "powershell"` with `args` pointing at `deepseek-credential-token.ps1`. That form is untested; verify it against your installed Codex version before relying on it.
+On Windows, replace the `auth` block per the commented-out alternative in `config/deepseek.config.toml.example` — `command = "powershell"` with `args` pointing at `deepseek-credential-token.ps1`. Confirmed working (verified independently on Windows, 2026-08-31); minor quoting differences are still plausible across Codex versions, so double-check on yours.
 
 Codex invokes the helper, trims its stdout, and uses that value as the bearer token — it's cached in memory for the configured refresh interval, never written into the profile. If your installed Codex version predates command-backed provider auth, do **not** silently fall back to plaintext `experimental_bearer_token`; update Codex or deliberately choose a documented alternative after reviewing the trade-off.
 

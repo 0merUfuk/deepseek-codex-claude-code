@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-08-31 (3) - Windows verified independently
+
+Windows was tested end to end by someone other than the author — both the Codex and Claude Code paths, via the single-prompt agent setup flow described in the README, with real DeepSeek dashboard usage confirming requests actually reached the provider (not just that the launchers ran without erroring).
+
+This resolves everything that was previously listed as unverified on Windows: `model_catalog_json` tilde-expansion, Codex's `auth.command` + `args` array actually invoking `powershell.exe` with a script path, and the `[1m]` suffix behaving the same on the wire. Updated everywhere this was stated as unverified: README (intro, "Current compatibility"), `docs/sources.md`, both `docs/setup-*.md` ("Platform status"), both `prompts/install-*.md`, and `config/deepseek.config.toml.example`.
+
+While doing this, caught and fixed a real pre-existing inaccuracy in both `prompts/install-*.md`: they said *"macOS and Linux are verified working designs; Windows is unverified,"* which was never true — Linux was never tested, only macOS was originally verified. Corrected to macOS + Windows verified, Linux still an unverified port.
+
+Linux remains untested — no Linux machine has been available to run this kit's verification steps on it.
+
 ## 2026-08-31 (2) - closed the gaps in true single-prompt agent setup
 
 Assessed the repo from the perspective of a fresh agent given nothing but "read this repo and set everything up," found four concrete gaps, fixed them:

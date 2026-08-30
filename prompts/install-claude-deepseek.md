@@ -18,7 +18,7 @@ Configure my existing Claude Code installation so DeepSeek is available through 
 - Read the current official DeepSeek Claude Code integration and Claude Code environment-variable documentation before choosing values. Do not copy a value verbatim from a rendered doc page without checking whether formatting markup (e.g. a bracketed annotation appended to a model name) has been mixed into the literal value.
 - Enable Claude Code's subprocess credential scrubbing if supported by the installed version.
 - Verify actual provider usage before claiming success.
-- **macOS and Linux are verified working designs; the Windows path is a reasoned but unverified port** (no Windows machine was available to test it while this kit was written). If you're on Windows, say so explicitly when you report completion, and be more conservative about claiming something works versus something merely ran without an error.
+- **macOS and Windows are verified working designs** — Windows confirmed independently (2026-08-31), by someone other than the author, on both harnesses, with real DeepSeek dashboard usage. **The Linux path is a reasoned but unverified port** (no Linux machine was available to test it while this kit was written). If you're on Linux, say so explicitly when you report completion, and be more conservative about claiming something works versus something merely ran without an error.
 
 ## Desired architecture
 
