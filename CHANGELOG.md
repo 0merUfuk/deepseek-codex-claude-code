@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-08-31 (2) - closed the gaps in true single-prompt agent setup
+
+Assessed the repo from the perspective of a fresh agent given nothing but "read this repo and set everything up," found four concrete gaps, fixed them:
+
+- **Harness selection was unstated.** Nothing told an agent what to do when the user doesn't say "Codex" or "Claude Code" specifically. README's agent callout now states the rule: check what's installed, set up whichever is present (both if both are), stop and say so if neither is.
+- **Script reuse was optional, not mandatory.** Both `prompts/install-*.md` said "create X (or reuse the repo's script if present)" — an agent could regenerate its own version from the prose spec instead of the actual tested script, and different agents would produce different scripts. Now mandatory: copy the repo's script verbatim; only write a new one if it's genuinely missing. `install-claude-deepseek.md` didn't mention reusing `scripts/claude-deepseek` or `scripts/deepseek-credential-token` at all — added.
+- **The DeepSeek setup-script URL was missing from the agent prompt.** `docs/setup-codex.md` (the human doc) had it; `prompts/install-codex-deepseek.md` (what the README tells an agent to follow) didn't, only described it in prose. Added the concrete URL.
+- **Unstated preconditions.** Neither prompt said the base tool must already be installed, that a DeepSeek API key must already be in hand, or that this requires real local shell/filesystem/secret-store access — meaning it can't run in a sandboxed or remote agent environment. Added an explicit "Preconditions" section to both prompts.
+
+Also corrected the "disputed V4 Pro" claim in `docs/sources.md` and README's Known caveats — checked directly against `~/.codex/deepseek.models.json`: `deepseek-v4-pro` is `supported_in_api: true` with the full `low`/`high`/`max` reasoning-effort range, same as flash, and works on both harnesses. Added a project-agnostic `CONTRIBUTING.md`.
+
 ## 2026-08-31 - Linux and Windows support, squashed history, agent-discovery callout
 
 Extended the kit from macOS-only to macOS/Linux/Windows, and cleaned up the repository ahead of going public.

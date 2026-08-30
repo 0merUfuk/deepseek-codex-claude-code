@@ -2,6 +2,12 @@
 
 Configure my existing Codex CLI installation so DeepSeek is available through an explicit `deepseek` profile while normal `codex` remains unchanged. This works on macOS, Linux, and Windows — detect which one you're on first and follow that branch throughout; don't mix steps from different platforms.
 
+## Preconditions — check these before doing anything else
+
+- Codex CLI is already installed (`codex --version` succeeds). This prompt adds DeepSeek to an existing install; it does not install Codex itself. If it's missing, stop and tell me to install Codex first rather than trying to work around it.
+- I already have a DeepSeek API key. This prompt cannot obtain one for me — if I don't have one, stop and tell me where to get it (see `docs/sources.md` in this repo for the current DeepSeek docs links) rather than guessing or fabricating a placeholder.
+- You have real local shell, filesystem, and OS secret-store access (macOS Keychain / Linux Secret Service / Windows Credential Manager) on the machine where Codex is installed. If you're running in a sandboxed or remote environment without that access, stop and say so — this setup cannot complete without it, and pretending otherwise would produce a config that looks right but doesn't work.
+
 ## Non-negotiable requirements
 
 - Preserve the current normal `codex` behavior.
@@ -44,14 +50,16 @@ codex-deepseek
 
 ## Credential helper
 
-**macOS / Linux:** create `~/.local/bin/deepseek-credential-token` (or reuse `scripts/deepseek-credential-token` from this repo if present) that takes a service name as its one argument and returns the credential value for:
+**macOS / Linux:** copy `scripts/deepseek-credential-token` from this repository to `~/.local/bin/deepseek-credential-token` **verbatim — do not rewrite it from the description below.** The checked-in script is already tested; regenerating your own from this spec risks missing a hardening detail (trailing-newline handling, treating an empty-but-present credential as an error, etc.). Only write a new one from the spec below if the repository file is genuinely missing.
+
+It takes a service name as its one argument and returns the credential value for:
 
 - service: the argument given (e.g. `deepseek-api-codex`)
 - account: current OS user
 
-It must auto-detect macOS (`security find-generic-password`) vs. Linux (`secret-tool lookup`), never log or decorate stdout, and never append a trailing newline to the token, because Codex uses stdout as the bearer token. Errors go to stderr. Treat an empty (but present) credential as an error, not a silent empty token.
+It auto-detects macOS (`security find-generic-password`) vs. Linux (`secret-tool lookup`), never logs or decorates stdout, and never appends a trailing newline to the token, because Codex uses stdout as the bearer token. Errors go to stderr. An empty (but present) credential is an error, not a silent empty token.
 
-**Windows:** use `scripts/windows/deepseek-credential-token.ps1` from this repo (or write an equivalent) — it reads a generic credential from Windows Credential Manager via `advapi32.dll`'s `CredRead`, with the same stdout/stderr contract as above, and its `-Store` mode writes credentials via `CredWrite` after a hidden `Read-Host -AsSecureString` prompt so the key is never on the command line or in history.
+**Windows:** copy `scripts/windows/deepseek-credential-token.ps1` from this repo **verbatim** — same rule as above, only write an equivalent if it's missing. It reads a generic credential from Windows Credential Manager via `advapi32.dll`'s `CredRead`, with the same stdout/stderr contract as above, and its `-Store` mode writes credentials via `CredWrite` after a hidden `Read-Host -AsSecureString` prompt so the key is never on the command line or in history.
 
 ## Profile
 
@@ -85,18 +93,20 @@ Only use `model_reasoning_effort` values the model catalog actually declares for
 
 Use the current official DeepSeek Codex `models.json`; do not reuse a stale checked-in copy. Save it separately as `~/.codex/deepseek.models.json` and validate the JSON before use.
 
-**Provenance caution.** If you fetch the catalog through a web-fetch tool that summarizes/paraphrases page content via an intermediate model, treat the result as unverified — a summarizing pass can hallucinate or reconstruct plausible-looking JSON rather than reproduce it byte-exact, especially for large files. Prefer a source you can read as raw, un-summarized bytes: the vendor's official one-line install script (fetched read-only with `curl` or, on Windows, `Invoke-WebRequest`; inspected as plain text, **not executed**) is often a more reliable source for an embedded catalog than an HTML doc page rendered through a summarizer. If a catalog entry contains something unexpected for a model-metadata file (e.g. a large embedded free-text instructions block), don't assume it's a hallucination or an injection without checking — verify it against a second, independently-fetched raw source before trusting or discarding it either way.
+Fetch DeepSeek's official one-line setup script — `https://cdn.deepseek.com/api-docs/codex-deepseek-setup-en.sh` (also in this repo's `docs/setup-codex.md`; re-check it's still current, vendor URLs change) — as raw bytes with `curl` (or `Invoke-WebRequest` on Windows), inspect it as **plain text** (do not execute it), and extract the `models.json` heredoc it writes.
+
+**Provenance caution.** If you instead fetch the catalog through a web-fetch tool that summarizes/paraphrases page content via an intermediate model, treat the result as unverified — a summarizing pass can hallucinate or reconstruct plausible-looking JSON rather than reproduce it byte-exact, especially for large files. The raw setup script above is the more reliable source precisely because it skips that step. If a catalog entry contains something unexpected for a model-metadata file (e.g. a large embedded free-text instructions block), don't assume it's a hallucination or an injection without checking — verify it against a second, independently-fetched raw source before trusting or discarding it either way.
 
 ## Launcher
 
-**macOS / Linux:** create `~/.local/bin/codex-deepseek` that:
+**macOS / Linux:** copy `scripts/codex-deepseek` from this repository to `~/.local/bin/codex-deepseek` **verbatim — do not rewrite it.** Only write a new one from the spec below if the repository file is genuinely missing. It:
 
 1. verifies `codex` exists;
 2. verifies the credential helper exists (on PATH) and the `deepseek-api-codex` credential is readable without printing it;
 3. executes `codex --profile deepseek "$@"`;
 4. does not modify the parent shell environment.
 
-**Windows:** create `codex-deepseek.ps1` (kept alongside `deepseek-credential-token.ps1`) with the same four properties, using `$args` in place of `"$@"` and PowerShell's own command-existence checks (`Get-Command`) in place of `command -v`.
+**Windows:** copy `scripts/windows/codex-deepseek.ps1` **verbatim** — same rule as above. It has the same four properties, using `$args` in place of `"$@"` and PowerShell's own command-existence checks (`Get-Command`) in place of `command -v`.
 
 ## Verification gates
 

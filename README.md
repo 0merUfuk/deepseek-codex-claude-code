@@ -1,6 +1,8 @@
 # DeepSeek with Codex + Claude Code
 
-> **Setting this up with an AI coding agent?** Point it at [`prompts/install-codex-deepseek.md`](prompts/install-codex-deepseek.md) and/or [`prompts/install-claude-deepseek.md`](prompts/install-claude-deepseek.md) and have it read and follow the file end to end — they're written as agent instructions, with verification gates and rollback steps built in. One step can't be automated on purpose: storing the DeepSeek API key is designed to require you, not the agent, typing it into a secure, non-echoing prompt — see "Security / credential isolation" below.
+> **Setting this up with an AI coding agent?** Tell it to read this repository and follow the install prompt(s) end to end: [`prompts/install-codex-deepseek.md`](prompts/install-codex-deepseek.md) for Codex CLI, [`prompts/install-claude-deepseek.md`](prompts/install-claude-deepseek.md) for Claude Code. If you don't say which, a well-behaved agent should check which of `codex` / `claude` is actually installed and set up whichever it finds — both, if both are present; if neither is installed, it should stop and say so rather than guess.
+>
+> Three things this needs from you, not the agent: Codex CLI and/or Claude Code already installed, a DeepSeek API key you've already obtained, and a real local terminal with OS secret-store access (macOS Keychain / Linux Secret Service / Windows Credential Manager) — this won't work in a sandboxed or remote agent environment with no access to your actual machine. One step is deliberately not automatable regardless: storing the key is designed to require you, not the agent, typing it into a secure, non-echoing prompt — see "Security / credential isolation" below.
 
 A reproducible macOS, Linux, and Windows kit for running DeepSeek through **Codex CLI** and **Claude Code** while keeping both normal tool paths unchanged: one provider, two harnesses, two protocol paths.
 

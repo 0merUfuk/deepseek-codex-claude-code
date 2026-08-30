@@ -2,6 +2,12 @@
 
 Configure my existing Claude Code installation so DeepSeek is available through `claude-deepseek` while normal `claude` remains unchanged. This works on macOS, Linux, and Windows — detect which one you're on first and follow that branch throughout; don't mix steps from different platforms.
 
+## Preconditions — check these before doing anything else
+
+- Claude Code is already installed and working (e.g. `claude --version` succeeds). This prompt adds DeepSeek to an existing install; it does not install Claude Code itself. If it's missing, stop and tell me to install it first rather than trying to work around it.
+- I already have a DeepSeek API key. This prompt cannot obtain one for me — if I don't have one, stop and tell me where to get it rather than guessing or fabricating a placeholder.
+- You have real local shell, filesystem, and OS secret-store access (macOS Keychain / Linux Secret Service / Windows Credential Manager) on the machine where Claude Code is installed. If you're running in a sandboxed or remote environment without that access, stop and say so — this setup cannot complete without it.
+
 ## Non-negotiable requirements
 
 - Do not permanently export DeepSeek `ANTHROPIC_*` or `CLAUDE_CODE_*` variables in my shell profile, or (on Windows) via `[Environment]::SetEnvironmentVariable` with a persisted scope. Process-scoped only (`export` in bash, `$env:` in PowerShell).
@@ -54,10 +60,10 @@ ANTHROPIC_LOG=debug claude -p "hi" 2>&1 | grep -E "model:|anthropic-beta"
 
 ## Launcher requirements
 
-**macOS / Linux:** create `~/.local/bin/claude-deepseek` that:
+**macOS / Linux:** copy `scripts/claude-deepseek` from this repository to `~/.local/bin/claude-deepseek` **verbatim — do not rewrite it from the description below.** The checked-in script is already tested; regenerating your own risks missing a hardening detail. Only write a new one from the spec below if the repository file is genuinely missing. It:
 
 1. verifies `claude` exists;
-2. reads the DeepSeek key from the OS secret store without printing it (via a shared `deepseek-credential-token <service>` helper, auto-detecting macOS Keychain vs. Linux Secret Service);
+2. reads the DeepSeek key from the OS secret store without printing it (via a shared `deepseek-credential-token <service>` helper — copy `scripts/deepseek-credential-token` verbatim too if it's not already installed; see `prompts/install-codex-deepseek.md`'s "Credential helper" section for the same file);
 3. sets `ANTHROPIC_AUTH_TOKEN` only in the launcher process;
 4. sets current DeepSeek-recommended base URL/model variables;
 5. sets `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` if the current Claude Code version supports it;
@@ -66,7 +72,7 @@ ANTHROPIC_LOG=debug claude -p "hi" 2>&1 | grep -E "model:|anthropic-beta"
 8. executes `claude "$@"`;
 9. leaves normal `claude` unchanged.
 
-**Windows:** create `claude-deepseek.ps1` (kept alongside `deepseek-credential-token.ps1`) with the same nine properties, using `$env:` assignments in place of `export`, `@args` in place of `"$@"`, and PowerShell's own command-existence checks (`Get-Command`) in place of `command -v`. The credential read goes through `deepseek-credential-token.ps1`'s Windows Credential Manager backend instead of a Keychain/Secret Service call.
+**Windows:** copy `scripts/windows/claude-deepseek.ps1` **verbatim** — same rule as above, and copy `scripts/windows/deepseek-credential-token.ps1` alongside it if not already installed. It has the same nine properties, using `$env:` assignments in place of `export`, `@args` in place of `"$@"`, and PowerShell's own command-existence checks (`Get-Command`) in place of `command -v`. The credential read goes through `deepseek-credential-token.ps1`'s Windows Credential Manager backend instead of a Keychain/Secret Service call.
 
 ## Verification gates
 
