@@ -2,32 +2,28 @@
 # Launches Claude Code against DeepSeek's Anthropic-compatible endpoint.
 # Normal `claude` is untouched: every DeepSeek-specific variable here is
 # exported only in this process's environment, never in a shell profile.
+# macOS and Linux; see scripts/windows/claude-deepseek.ps1 for Windows.
 set -euo pipefail
-
-# Distinct from the Codex service name on purpose: this should hold a
-# DIFFERENT DeepSeek API key than the Codex profile's deepseek-api-codex
-# service. It's the distinct keys (not just the distinct service names)
-# that let each tool's usage be attributed separately on the DeepSeek
-# dashboard, and let you rotate one without touching the other.
-KEYCHAIN_SERVICE="deepseek-api-claudecode"
-KEYCHAIN_ACCOUNT="$USER"
 
 if ! command -v claude >/dev/null 2>&1; then
   echo "claude-deepseek: claude CLI not found on PATH" >&2
   exit 127
 fi
 
-DEEPSEEK_TOKEN="$(security find-generic-password -a "$KEYCHAIN_ACCOUNT" -s "$KEYCHAIN_SERVICE" -w 2>/dev/null)" || {
-  echo "claude-deepseek: no macOS Keychain item found (service=$KEYCHAIN_SERVICE, account=$KEYCHAIN_ACCOUNT)" >&2
-  echo "claude-deepseek: store it with:" >&2
-  echo "  security add-generic-password -a \"\$USER\" -s $KEYCHAIN_SERVICE -w -U" >&2
+if ! command -v deepseek-credential-token >/dev/null 2>&1; then
+  echo "claude-deepseek: deepseek-credential-token helper not found on PATH" >&2
+  exit 127
+fi
+
+# Distinct from the Codex service name on purpose: this should hold a
+# DIFFERENT DeepSeek API key than the Codex profile's deepseek-api-codex
+# service. It's the distinct keys (not just the distinct service names)
+# that let each tool's usage be attributed separately on the DeepSeek
+# dashboard, and let you rotate one without touching the other.
+DEEPSEEK_TOKEN="$(deepseek-credential-token deepseek-api-claudecode)" || {
+  echo "claude-deepseek: no readable credential for service 'deepseek-api-claudecode' — see docs/setup-claude-code.md" >&2
   exit 1
 }
-
-if [ -z "$DEEPSEEK_TOKEN" ]; then
-  echo "claude-deepseek: Keychain item found but empty" >&2
-  exit 1
-fi
 
 export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_TOKEN"
 unset DEEPSEEK_TOKEN

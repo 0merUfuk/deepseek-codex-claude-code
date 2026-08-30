@@ -9,6 +9,8 @@ model_reasoning_effort = "high"
 # "~" here IS expanded by Codex's config loader for this field (confirmed by
 # testing with a deliberately broken path: Codex errored on load rather than
 # silently ignoring it). Portable across machines/usernames as written.
+# Verified on macOS; re-verify tilde-expansion on Linux and Windows before
+# relying on it there — not independently confirmed on either yet.
 model_catalog_json = "~/.codex/deepseek.models.json"
 
 # Optional extra caution for a third-party/unfamiliar model: require your
@@ -25,13 +27,30 @@ base_url = "https://api.deepseek.com/"
 wire_api = "responses"
 
 # Hardened credential path: Codex invokes this command and uses its
-# trimmed stdout as the bearer token. The helper reads the key from macOS
-# Keychain; the key never sits in this file or in Codex's environment.
+# trimmed stdout as the bearer token. The helper reads the key from the OS's
+# native secret store (macOS Keychain / Linux Secret Service / Windows
+# Credential Manager); the key never sits in this file or in Codex's
+# environment.
 #
 # IMPORTANT: auth.command is executed with execvp, not through a shell, so
 # "~" is NOT expanded here (unlike model_catalog_json above). Reference the
 # helper by bare name and keep it on PATH (e.g. ~/.local/bin), or use a
 # fully-qualified absolute path. A "~/..." path here fails with
 # "No such file or directory" even though the file exists.
+#
+# macOS / Linux — bare command name on PATH, service name passed as args[0]
+# (see scripts/deepseek-credential-token):
 [model_providers.deepseek.auth]
-command = "deepseek-keychain-token"
+command = "deepseek-credential-token"
+args = ["deepseek-api-codex"]
+
+# Windows — comment out the two lines above and use this instead. Untested
+# on Windows Codex; verify empirically (see docs/setup-codex.md) before
+# relying on it.
+# [model_providers.deepseek.auth]
+# command = "powershell"
+# args = [
+#   "-NoProfile", "-ExecutionPolicy", "Bypass",
+#   "-File", "C:\\Users\\<you>\\.codex\\scripts\\deepseek-credential-token.ps1",
+#   "deepseek-api-codex",
+# ]

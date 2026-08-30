@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-08-31 - Linux and Windows support, squashed history, agent-discovery callout
+
+Extended the kit from macOS-only to macOS/Linux/Windows, and cleaned up the repository ahead of going public.
+
+- **Cross-platform credential storage.** Replaced the macOS-only `scripts/deepseek-keychain-token` with `scripts/deepseek-credential-token`, a single parameterized helper (`deepseek-credential-token <service-name>`) shared by both harnesses that auto-detects macOS (Keychain via `security`) vs. Linux (Secret Service via `secret-tool`). Added a Windows PowerShell equivalent, `scripts/windows/deepseek-credential-token.ps1`, using Windows Credential Manager through direct `advapi32.dll` P/Invoke (`CredRead`/`CredWrite`) — no third-party module. Its `-Store` mode prompts via `Read-Host -AsSecureString` so the key is never on the command line or in PowerShell history, matching the security bar of the macOS/Linux `security`/`secret-tool` prompts.
+- **Windows launchers.** Added `scripts/windows/codex-deepseek.ps1` and `scripts/windows/claude-deepseek.ps1`, functional ports of the existing bash launchers (process-scoped `$env:` assignments, same model-picker/`switchModelsOnFlag` hardening, same verification contract).
+- **`config/deepseek.config.toml.example`** now shows both the macOS/Linux `auth.command`/`args` form and a commented-out Windows form (`command = "powershell"` invoking the `.ps1` helper).
+- **`docs/setup-codex.md` and `docs/setup-claude-code.md`** rewritten with a macOS/Linux/Windows branch at every OS-sensitive step (credential storage, helper/launcher install location, rollback).
+- **Both `prompts/install-*.md` agent prompts** now open by telling the agent to detect its OS and follow that branch throughout, and carry the platform-specific credential/launcher instructions needed to act on either OS without guessing.
+- **Honesty about verification status:** the macOS path remains the only one verified end to end. Linux and Windows are a reasoned port built from standard, documented OS APIs, explicitly flagged as unverified everywhere it matters (README, both setup docs, both agent prompts, `docs/sources.md`) — not claimed as tested when it wasn't.
+- **README**: added a top-of-file callout pointing an AI agent straight at `prompts/install-*.md` instead of leaving it to infer that from "Getting started"; repository-contents tree, security section, and known caveats updated for the new file layout and platform status.
+- **Squashed git history.** The repository's two commits (the original publish, which included the full `publishing/` directory before it was migrated out, and the cleanup commit that removed it) were squashed into one clean commit before this repository is made public. Deleting `publishing/` in a later commit did not remove it from git history — anyone could have checked out the first commit and seen the private Personal PR content this migration was meant to keep out of the public repo. No secrets were in that history (checked before squashing), but the content itself (social drafts, planning doc) was exactly what was supposed to stay private. Low-risk to rewrite: only two commits ever existed, both unpushed-to-public, no collaborators or forks.
+
 ## 2026-08-30 (5) - split off Personal PR material, corrected attribution/model-mapping wording, added license
 
 Prepared the repository for eventual public release by separating the engineering artifact from the content/publishing operation around it, and fixed several documentation claims that were imprecise or too strong.

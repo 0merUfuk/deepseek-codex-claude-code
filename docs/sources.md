@@ -46,6 +46,16 @@ The reason to hide native models isn't that DeepSeek necessarily rejects a nativ
 
 While preparing this kit, a DeepSeek Codex model-catalog fetch (via an AI agent's web-fetch tool) returned a `models.json` where each model entry contained a large embedded free-text block resembling a full assistant system prompt. That looked, at first pass, like it could be a hallucination introduced by the fetch tool's own summarization step, or a prompt-injection risk if installed as-is. It turned out to be genuine — confirmed by fetching DeepSeek's official setup script directly with `curl` and reading it as plain, un-summarized text, where the identical content appeared in a `write_models_json()` heredoc. The lesson generalizes: when a fetch tool paraphrases or summarizes a large vendor artifact instead of returning it byte-exact, verify surprising content against a second, rawer source before trusting or discarding it — don't do either on a single pass through a summarizer.
 
+## Cross-platform status (Linux, Windows)
+
+Everything above under "OpenAI Codex" and "Claude Code" was verified against macOS behavior specifically (Keychain, `security`, `execvp` semantics observed on that platform). The Linux path (`secret-tool` / Secret Service) and the Windows path (Credential Manager via `advapi32.dll` `CredRead`/`CredWrite`, invoked from PowerShell) are built from well-documented, standard OS APIs and follow the same design, but **were not run on a Linux or Windows machine while preparing this kit** — no access to either at the time. Specifically unverified there:
+
+- whether `model_catalog_json`'s tilde-expansion and `auth.command`'s lack of it (docs/setup-codex.md, step 4) hold the same way on Linux/Windows Codex builds;
+- whether Codex's `auth.command` + `args` array successfully invokes `powershell.exe` with a script path on Windows the way it invokes a bare executable on macOS/Linux;
+- whether the `[1m]` suffix behavior in Claude Code is identical cross-platform (there's no OS-specific reason it wouldn't be, since it's client-side alias-list logic, but it hasn't been checked on the wire outside macOS).
+
+Treat the Linux and Windows paths as a reasoned, carefully-written port, not as independently verified — run the verification steps in docs/setup-codex.md and docs/setup-claude-code.md yourself the first time on either platform, the same way the macOS path was originally verified rather than assumed from docs.
+
 ## Evidence boundary
 
 The workload metrics in this repository come from the author's DeepSeek dashboard screenshots and workload, not from the documentation above:
@@ -58,3 +68,5 @@ The workload metrics in this repository come from the author's DeepSeek dashboar
 These figures belong to the observed Codex workload only. The Claude Code integration has been verified end to end, but no comparable Claude Code workload total is currently published.
 
 Do not extrapolate those totals into universal DeepSeek pricing. Current DeepSeek pricing differentiates cache-hit input, cache-miss input, output, and peak/off-peak periods.
+
+**Anecdotal note, not a benchmark.** During this hands-on use, DeepSeek's prompt caching subjectively felt unusually effective — repeat-request cost noticeably lower than the author's usual experience with other providers. This is an unverified impression, not a measurement: no cache-hit ratio was captured, and no other provider's numbers are attached for comparison. Don't cite it as a pricing or caching-efficiency claim; if that comparison is ever run properly, it belongs with real numbers, not here.
