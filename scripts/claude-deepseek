@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Launches Claude Code against DeepSeek's Anthropic-compatible endpoint.
+# Normal `claude` is untouched: every DeepSeek-specific variable here is
+# exported only in this process's environment, never in a shell profile.
+set -euo pipefail
+
+# Distinct from the Codex service name on purpose: this should hold a
+# DIFFERENT DeepSeek API key than the Codex profile's deepseek-api-codex
+# service. It's the distinct keys (not just the distinct service names)
+# that let each tool's usage be attributed separately on the DeepSeek
+# dashboard, and let you rotate one without touching the other.
+KEYCHAIN_SERVICE="deepseek-api-claudecode"
+KEYCHAIN_ACCOUNT="$USER"
+
+if ! command -v claude >/dev/null 2>&1; then
+  echo "claude-deepseek: claude CLI not found on PATH" >&2
+  exit 127
+fi
+
+DEEPSEEK_TOKEN="$(security find-generic-password -a "$KEYCHAIN_ACCOUNT" -s "$KEYCHAIN_SERVICE" -w 2>/dev/null)" || {
+  echo "claude-deepseek: no macOS Keychain item found (service=$KEYCHAIN_SERVICE, account=$KEYCHAIN_ACCOUNT)" >&2
+  echo "claude-deepseek: store it with:" >&2
+  echo "  security add-generic-password -a \"\$USER\" -s $KEYCHAIN_SERVICE -w -U" >&2
+  exit 1
+}
+
+if [ -z "$DEEPSEEK_TOKEN" ]; then
+  echo "claude-deepseek: Keychain item found but empty" >&2
+  exit 1
+fi
+
+export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_TOKEN"
+unset DEEPSEEK_TOKEN
+
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+
+# "[1m]" IS a real Claude Code client-side convention — not doc-page noise
+# (an earlier version of this script assumed it was and stripped it; that
+# was wrong). Confirmed via ANTHROPIC_LOG=debug raw request inspection:
+# Claude Code strips it before the model ID hits the wire, but uses its
+# presence to assume the large context window and adds Anthropic's
+# context-1m beta header. Without it, Claude Code assumes a much smaller
+# window for an unrecognized model and auto-compacts far earlier than
+# CLAUDE_CODE_AUTO_COMPACT_WINDOW below (75% of the real 1,048,576-token
+# window) is meant to allow. No "flash[1m]"/"haiku[1m]" variant exists, so
+# the flash/haiku-tier line below correctly has no suffix.
+export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
+export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"
+export CLAUDE_CODE_EFFORT_LEVEL="max"
+export CLAUDE_CODE_AUTO_COMPACT_WINDOW="786432"
+
+# Keep provider credentials out of shell commands, hooks, and MCP subprocesses.
+export CLAUDE_CODE_SUBPROCESS_ENV_SCRUB="1"
+
+# Claude Code's /model picker always lists the full built-in catalog
+# (Opus/Sonnet/Haiku *and* any other native models such as Fable) alongside
+# whatever aliases ANTHROPIC_DEFAULT_* defines. Overriding the three tier
+# aliases does not remove the others, and picking one while ANTHROPIC_BASE_URL
+# points at DeepSeek doesn't reliably fail — DeepSeek's Anthropic-compatible
+# layer currently maps Claude-style model names onto its own models, so the
+# request could be silently served by a different DeepSeek model instead.
+# modelPicker with replaceBuiltInOptions hides the built-in lineup entirely,
+# keeping model selection explicit instead of relying on provider-side
+# aliasing behavior.
+#
+# switchModelsOnFlag:false is load-bearing, not cosmetic: with it left at
+# its (commonly default-on) value, a claude-deepseek run has been observed
+# to persist a DeepSeek model id into the NORMAL ~/.claude/settings.json
+# "model" field afterwards — corrupting what plain `claude` starts with
+# next time, on a machine that never touched this launcher's env vars
+# directly. Forcing it false here is scoped to this session only via
+# --settings; it does not change normal `claude`'s own preference.
+DEEPSEEK_SETTINGS='{"switchModelsOnFlag":false,"modelPicker":{"replaceBuiltInOptions":true,"options":[{"model":"deepseek-v4-pro[1m]","label":"DeepSeek V4 Pro","description":"High-capability DeepSeek model, 1M context"},{"model":"deepseek-v4-flash","label":"DeepSeek V4 Flash","description":"Fast/lightweight DeepSeek model"}]}}'
+
+exec claude --settings "$DEEPSEEK_SETTINGS" "$@"

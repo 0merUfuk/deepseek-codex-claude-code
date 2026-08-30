@@ -1,0 +1,9 @@
+.DS_Store
+*.log
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+HANDOFF.md
+tmp/

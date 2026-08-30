@@ -1,0 +1,37 @@
+# Copy to ~/.codex/deepseek.config.toml
+# Current Codex --profile behavior layers this file over ~/.codex/config.toml.
+# Re-check current Codex + DeepSeek docs before use.
+
+model = "deepseek-v4-flash"
+model_provider = "deepseek"
+model_reasoning_effort = "high"
+
+# "~" here IS expanded by Codex's config loader for this field (confirmed by
+# testing with a deliberately broken path: Codex errored on load rather than
+# silently ignoring it). Portable across machines/usernames as written.
+model_catalog_json = "~/.codex/deepseek.models.json"
+
+# Optional extra caution for a third-party/unfamiliar model: require your
+# own approval on risky actions, and keep this profile's session from
+# triggering your normal hook automations. Harmless, off by default, remove
+# if you don't want the extra prompts.
+# approvals_reviewer = "user"
+# [features]
+# hooks = false
+
+[model_providers.deepseek]
+name = "DeepSeek"
+base_url = "https://api.deepseek.com/"
+wire_api = "responses"
+
+# Hardened credential path: Codex invokes this command and uses its
+# trimmed stdout as the bearer token. The helper reads the key from macOS
+# Keychain; the key never sits in this file or in Codex's environment.
+#
+# IMPORTANT: auth.command is executed with execvp, not through a shell, so
+# "~" is NOT expanded here (unlike model_catalog_json above). Reference the
+# helper by bare name and keep it on PATH (e.g. ~/.local/bin), or use a
+# fully-qualified absolute path. A "~/..." path here fails with
+# "No such file or directory" even though the file exists.
+[model_providers.deepseek.auth]
+command = "deepseek-keychain-token"

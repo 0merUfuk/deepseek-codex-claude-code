@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Launches Codex against DeepSeek via the "deepseek" profile-v2 config.
+# Auth is command-backed (model_providers.deepseek.auth.command), so no
+# secret is exported into this process or Codex's environment.
+set -euo pipefail
+
+if ! command -v codex >/dev/null 2>&1; then
+  echo "codex-deepseek: codex CLI not found on PATH" >&2
+  exit 127
+fi
+
+# Referenced by bare name, resolved via PATH, on purpose: Codex invokes
+# auth.command with execvp and does NOT run it through a shell, so a
+# "~/.local/bin/..." path in config.toml is never tilde-expanded there and
+# fails with "No such file or directory". Keep this helper on PATH (e.g.
+# ~/.local/bin, alongside this launcher) instead of hardcoding its path.
+if ! command -v deepseek-keychain-token >/dev/null 2>&1; then
+  echo "codex-deepseek: deepseek-keychain-token helper not found on PATH" >&2
+  exit 127
+fi
+
+# Fail before opening Codex if the Keychain item is missing.
+if ! deepseek-keychain-token >/dev/null 2>&1; then
+  echo "codex-deepseek: no readable Keychain credential for service 'deepseek-api-codex'" >&2
+  exit 1
+fi
+
+exec codex --profile deepseek "$@"
