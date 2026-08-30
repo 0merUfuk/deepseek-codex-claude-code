@@ -1,23 +1,28 @@
 # Contributing
 
-This is a small reproduction kit — bash/PowerShell scripts and docs, no build step, no test suite. Keep contributions proportional to that.
+Thanks for considering a contribution. A few practical guidelines, kept general on purpose — read the repository itself for anything language- or tool-specific.
 
-## Most useful right now
+## Before you start
 
-- **Linux or Windows verification.** Those paths are a careful port from documented OS APIs but haven't been run end to end (see `docs/sources.md`). A report of what worked, what didn't, and on what OS/tool versions is genuinely useful — a PR fixing something you hit is even better.
-- **Version-sensitive corrections.** DeepSeek, Codex, and Claude Code all move fast. If something in `docs/` no longer matches current behavior, say what changed and how you confirmed it (not just "docs say X now" — check the actual tool where you can).
+- For anything beyond a small fix, open an issue first to discuss the approach — saves rework on both sides.
+- Check existing issues and PRs so you're not duplicating in-progress work.
+- Match the conventions already in the repo (naming, structure, style, tone) rather than introducing new ones. If the repo has a style you disagree with, raise it as its own discussion, not folded into an unrelated change.
 
 ## Making a change
 
-1. Fork, branch, make a focused change.
-2. If you're touching a script, actually run it — `bash -n` for syntax at minimum, a real invocation if you can.
-3. If you're touching a claim in `docs/` (a "verified" statement, a behavior description), say how you checked it.
-4. Open a PR describing what changed and why.
+1. Fork the repository and create a branch for your change.
+2. Keep it focused — one logical change per PR. Unrelated cleanup belongs in a separate PR.
+3. Verify it actually works before opening the PR. What that means depends on the repo: run the code if there is any, follow the docs as written if it's documentation, check that links and examples resolve. Use whatever the repo's own tooling provides (tests, linters, build scripts) if present.
+4. Update documentation if the change affects how something is used or behaves.
+
+## Opening the PR
+
+Describe what changed and why. If you verified the change, say how — that's often more useful to a reviewer than the diff itself.
 
 ## Reporting an issue
 
-Include your OS, the Codex/Claude Code version, and what you actually observed versus what the docs said would happen.
+Include what you expected, what actually happened, and enough context to reproduce it (environment, versions, exact steps). For a documentation issue, say what's inaccurate and, if you can, how you confirmed it.
 
 ## Security
 
-Don't open a public issue with a real API key or other credential in it, even redacted-looking. If you're reporting a credential-handling bug, describe the behavior instead.
+Don't post credentials, tokens, or other secrets in an issue or PR — not even ones you think are redacted. If you're reporting a security-sensitive bug, prefer a private report if the repository offers one; otherwise describe the behavior without including exploit details or real secrets.
